@@ -23,6 +23,10 @@ import org.apache.flink.api.common.functions.ReduceFunction;
 import org.apache.flink.streaming.api.watermark.Watermark;
 
 
+import org.apache.flink.streaming.api.datastream.SplitStream;
+import org.apache.flink.streaming.api.collector.selector.OutputSelector;
+
+
 public class WikipediaAnalysis {
 
 
@@ -66,6 +70,14 @@ public class WikipediaAnalysis {
             .sum(3);
 
 
+		SplitStream<Tuple4<String, Long, Long, Integer>> detectspider = clickcount
+				.split(new MySelector());
+		DataStream<Tuple4<String, Long, Long, Integer>> spiders = detectspider.select("spider");
+
+
+
+
+
         DataStream<Tuple4<String, Long, Long, Integer>> testsession = withTimestampsAndWatermarks
             .keyBy(0)
             //.window(EventTimeSessionWindows.withGap(Time.milliseconds(2L)))
@@ -83,13 +95,31 @@ public class WikipediaAnalysis {
 //        FlinkJedisPoolConfig redisConf = new FlinkJedisPoolConfig.Builder().setHost("127.0.0.1").setPort(6379).build();
 
         //clickcount.print();
-        testsession.print();
+        //testsession.print();
+		spiders.print();
 
 
         env.execute("Window WordCount");
 
 
     }
+
+	// figure out what does "serialVersionUID" means....
+	public static class MySelector implements OutputSelector<Tuple4<String, Long, Long, Integer>> {
+		private static final long serialVersionUID = 1L;
+
+		@Override
+		public Iterable<String> select(Tuple4<String, Long, Long, Integer> value) {
+			List<String> output = new ArrayList<>();
+			if (value.f3 > 3) {
+				output.add("spider");
+			} else {
+				output.add("legit");
+			}
+			return output;
+		}
+	}
+
 
 
 
@@ -101,6 +131,23 @@ public class WikipediaAnalysis {
         }
     }
 
+
+//        FlinkKafkaProducer09<String> myProducer = new FlinkKafkaProducer09<String>(
+//                "localhost:9092",            // broker list
+//                "jtestc",                  // target topic
+//                new SimpleStringSchema());   // serialization schema
+
+//		        StringKafka.addSink(myProducer);
+//        DataStream<String> StringKafka = aggregated.map(new TupleToStr());
+
+/*
+    public static class TupleToStr implements MapFunction<Tuple3<String, Long, Integer>, String> {
+      @Override
+      public String map(Tuple3<String, Long, Integer> in) {
+        return in.f0 + ';' + in.f1.toString() + ';' + in.f2.toString();
+      }
+    }
+*/
 
 }
 
