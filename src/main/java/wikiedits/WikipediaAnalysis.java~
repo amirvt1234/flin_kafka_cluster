@@ -108,7 +108,7 @@ public class WikipediaAnalysis {
 
         //clickcount.print();
         //testsession.print();
-		//spiders.print();
+		spiders.print();
 
 
         env.execute("Window WordCount");
