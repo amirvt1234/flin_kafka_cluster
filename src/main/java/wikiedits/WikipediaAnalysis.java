@@ -49,19 +49,21 @@ public class WikipediaAnalysis {
 
 
         Properties properties = new Properties();
-        properties.setProperty("bootstrap.servers", "localhost:9092");
+        //properties.setProperty("bootstrap.servers", "localhost:9092");
+        properties.setProperty("bootstrap.servers","172.31.55.173:9092,172.31.53.162:9092,172.31.56.220:9092");
         // only required for Kafka 0.8
-        properties.setProperty("zookeeper.connect", "localhost:2181");
+        //properties.setProperty("zookeeper.connect", "localhost:2181");
+	properties.setProperty("zookeeper.connect", "172.31.53.147:2181");
         properties.setProperty("group.id", "test");
         //DataStream<String> dataStream = env
 
-        FlinkKafkaConsumer09<String> kafkaSource = new FlinkKafkaConsumer09<>("jtest", new SimpleStringSchema(), properties);
+        FlinkKafkaConsumer09<String> kafkaSource = new FlinkKafkaConsumer09<>("jtest30b", new SimpleStringSchema(), properties);
 
         DataStream<Tuple4<String, Long, Long, Integer>> datain = env
 	        .addSource(kafkaSource)
             .flatMap(new LineSplitter());
 
-
+/*
         DataStream<Tuple4<String, Long, Long, Integer>> withTimestampsAndWatermarks =
             datain.assignTimestampsAndWatermarks(new AscendingTimestampExtractor<Tuple4<String, Long, Long, Integer>>() {
 
@@ -108,9 +110,9 @@ public class WikipediaAnalysis {
 
         //clickcount.print();
         //testsession.print();
-		spiders.print();
+	//	spiders.print();
 
-
+*/
         env.execute("Window WordCount");
 
 
